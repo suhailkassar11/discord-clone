@@ -10,7 +10,7 @@ export const initialProfile=async()=>{
 
     const profile=await db.profile.findUnique({
         where:{
-            userID:user.id
+            userId:user.id
         }
     })
 
@@ -20,7 +20,7 @@ export const initialProfile=async()=>{
 
     const newProfile=await db.profile.create({
         data:{
-            userID:user.id,
+            userId:user.id,
             name:`${user.firstName} ${user.lastName}`,
             email:user.emailAddresses[0].emailAddress,
             imageUrl:user.imageUrl,   
