@@ -28,7 +28,7 @@ model Server{
   id    String    @id @default(auto())  @map("_id") @db.ObjectId
   name    String
   imageUrl   String
-  inviteCode    String 
+  inviteCode    String @unique
   members  Member[]
   channels  Channel[]
   profileId String  @db.ObjectId
