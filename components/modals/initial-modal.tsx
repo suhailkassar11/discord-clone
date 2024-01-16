@@ -3,11 +3,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import FileUpload from "../file-upload";
-import { DialogTitle} from "@radix-ui/react-dialog";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } from "../ui/dialog";
+import { Dialog,DialogTitle, DialogContent, DialogDescription, DialogFooter, DialogHeader } from "../ui/dialog";
 import { Form,FormControl,FormField,FormItem,FormLabel,FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";

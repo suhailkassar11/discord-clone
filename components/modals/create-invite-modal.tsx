@@ -1,8 +1,7 @@
 "use client"
 
-import { DialogTitle} from "@radix-ui/react-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader } from "../ui/dialog";
-import { useRouter } from "next/navigation";
+import { } from "@radix-ui/react-dialog";
+import { Dialog,DialogTitle, DialogContent, DialogHeader } from "../ui/dialog";
 import { useModal } from "@/hooks/use-modal-store";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -15,7 +14,6 @@ import axios from "axios";
 
 
 export const InviteModal = () => {
-    const router=useRouter()
     const {onOpen,onClose,isOpen,type,data}=useModal()
     const [copied,setCopied]=useState(false)
     const [isLoading,setIsLoading]=useState(false)

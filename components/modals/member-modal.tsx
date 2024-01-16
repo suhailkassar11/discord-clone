@@ -1,73 +1,90 @@
-"use client"
+"use client";
 
-import { DialogTitle} from "@radix-ui/react-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader } from "../ui/dialog";
-import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useModal } from "@/hooks/use-modal-store";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Check, Copy, RefreshCcw } from "lucide-react";
-import { useOrigin } from "@/hooks/use-origin";
+import { ServerWithMembersWithProfiles } from "@/type";
+import { ScrollArea } from "../ui/scroll-area";
+import UserAvatar from "../user-avatar";
+import { Check, MoreVertical, Shield, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import axios from "axios";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
+const roleIconMap={
+    "GUEST":null,
+    "MODERATOR":<ShieldCheck className="h-4 w-4 ml-2 text-indigo-500"/>,
+    "ADMIN":<ShieldAlert className="h-4 w-4 ml-2 text-rose-500"/>,
+}
 
 export const MembersModal = () => {
-    const router=useRouter()
-    const {onOpen,onClose,isOpen,type,data}=useModal()
-    const [copied,setCopied]=useState(false)
-    const [isLoading,setIsLoading]=useState(false)
-    const isModalOpen=isOpen && type==="members"
-    const origin=useOrigin()
-    const {server}=data
-    const inviteUrl=`${origin}/invite/${server?.inviteCode}`
+  const { onClose, isOpen, type, data } = useModal();
+  const [loadingId,setLoadingId]=useState("")
+  const isModalOpen = isOpen && type === "members";
+  const { server } = data as { server: ServerWithMembersWithProfiles };
 
-    const onCopy=()=>{
-        navigator.clipboard.writeText(inviteUrl)
-        setCopied(true)
-
-        setTimeout(()=>{setCopied(false)},1000);
-    }
-    
-    const onNew=async()=>{
-        try {
-            setIsLoading(true)
-            const response=await axios.patch(`/api/servers/${server?.id}/invite-code`)
-            onOpen("invite",{server:response.data})
-        } catch (error) {
-            console.log(error)
-        }finally{
-            setIsLoading(false)
-        }
-    }
-    
-    return ( 
-        <Dialog open={isModalOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white text-black p-0 overflow-hidden">
-                <DialogHeader className="pt-8 px-6">
-                    <DialogTitle className="font-bold text-center text-xl">
-                        Invite Friends
-                    </DialogTitle>
-                </DialogHeader>
-                    <div className="p-6">
-                        <Label className="uppercase text-xs font-semibold text-zinc-500 dark:text-secondary/70">
-                            Server invite people
-                        </Label>
-                        <div className="flex border-0 items-center mt-2 gap-x-2">
-                            <Input readOnly disabled={isLoading} className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0" value={inviteUrl}/>
-                            <Button disabled={isLoading} className={cn(copied?"bg-green-500":"bg-zinc-200/50")}  size="icon" >
-                            {copied?<Check className=" h-4 w-4"/>: <Copy onClick={onCopy} className="h-4 w-4"/>}    
-                           </Button>
+  return (
+    <Dialog open={isModalOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-white text-black p-0 overflow-hidden">
+        <DialogHeader className="pt-8 px-6">
+          <DialogTitle className="font-bold text-center text-xl">
+            Manage Members
+          </DialogTitle>
+          <DialogDescription className="text-zinc-500 text-center">
+            {server?.members?.length} Members
+          </DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="mt-8 max-h-[420px] pr-8">
+            {server?.members?.map((member)=>(
+                <div key={member.id} className="flex items-center gap-x-2 mb-6">
+                    <UserAvatar src={member.profile.imageUrl} className=""/>
+                    <div className="flex flex-col gap-y-1">
+                        <div className="text-xs font-semibold flex items-cener gap-x-1">
+                            {member.profile.name}
+                            {roleIconMap[member.role]}
                         </div>
-                        <Button onClick={onNew} disabled={isLoading} >
-                            generate another link <RefreshCcw className="ml-2 h-4 w-4"/>
-                        </Button>
+                        <p className="text-xs text-zinc-500">
+                            {member.profile.email}
+                        </p>
                     </div>
-            </DialogContent>
-        </Dialog>
-     );
-}
- 
+                    {server.profileId !== member.profileId && loadingId !== member.id && (
+                        <div className="ml-auto">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger>
+                                    <MoreVertical className="h-4 w-4 text-zinc-500"/>
+                                </DropdownMenuTrigger>
+                               <DropdownMenuContent side="left">
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="flex items-center">
+                                            <ShieldQuestion className="w-4 h-4 mr-2"/>
+                                            <span>Role</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                <DropdownMenuItem >
+                                                    <Shield className="h-4 w-4 mr-2"/>
+                                                    guest
+                                                    {member?.role==="GUEST" && (
+                                                        <Check className="h-4 w-4 ml-auto"/>
+                                                    )}
+                                                </DropdownMenuItem>
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                               </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default MembersModal;
