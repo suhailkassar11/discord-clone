@@ -11,9 +11,13 @@ import { useModal } from "@/hooks/use-modal-store";
 import { ServerWithMembersWithProfiles } from "@/type";
 import { ScrollArea } from "../ui/scroll-area";
 import UserAvatar from "../user-avatar";
-import { Check, MoreVertical, Shield, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
+import { Check, Gavel, Loader2, MoreVertical, Shield, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { MemberRole } from "@prisma/client";
+import qs from "query-string"
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const roleIconMap={
     "GUEST":null,
@@ -22,10 +26,48 @@ const roleIconMap={
 }
 
 export const MembersModal = () => {
-  const { onClose, isOpen, type, data } = useModal();
+  const {onOpen, onClose, isOpen, type, data } = useModal();
   const [loadingId,setLoadingId]=useState("")
   const isModalOpen = isOpen && type === "members";
   const { server } = data as { server: ServerWithMembersWithProfiles };
+  const router=useRouter()
+
+  const onChangeRole=async(role:MemberRole,memberId:string)=>{
+    try {
+        setLoadingId(memberId)
+        const url=qs.stringifyUrl({
+            url:`/api/members/${memberId}`,query:{
+                serverId:server?.id,
+            }
+        })
+
+        const response=await axios.patch(url,{role});
+        router.refresh()
+        onOpen("members",{server:response.data})
+    } catch (error) {
+        console.log(error)
+    }finally{
+        setLoadingId("")
+    }
+  }
+  const onKick=async(memberId:string)=>{
+    try {
+        setLoadingId(memberId)
+        const url=qs.stringifyUrl({
+            url:`/api/members/${memberId}`,query:{
+                serverId:server?.id,
+            }
+        })
+
+        const response=await axios.delete(url);
+        router.refresh()
+        onOpen("members",{server:response.data})
+    } catch (error) {
+        console.log(error)
+    }finally{
+        setLoadingId("")
+    }
+  }
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
@@ -65,20 +107,33 @@ export const MembersModal = () => {
                                         </DropdownMenuSubTrigger>
                                         <DropdownMenuPortal>
                                             <DropdownMenuSubContent>
-                                                <DropdownMenuItem >
+                                                <DropdownMenuItem onClick={()=>onChangeRole("GUEST",member.id)}>
                                                     <Shield className="h-4 w-4 mr-2"/>
                                                     guest
                                                     {member?.role==="GUEST" && (
                                                         <Check className="h-4 w-4 ml-auto"/>
                                                     )}
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={()=>onChangeRole("MODERATOR",member.id)}>
+                                                    <ShieldCheck className="h-4 w-4 mr-2"/>
+                                                    Moderator
+                                                    {member?.role==="MODERATOR" && (
+                                                        <Check className="h-4 w-4 ml-auto"/>
+                                                    )}
+                                                </DropdownMenuItem>
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>
                                     </DropdownMenuSub>
+                                    <DropdownMenuSeparator/>
+                                   <DropdownMenuItem onClick={()=>onKick(member.id)}>
+                                     <Gavel className="h-4 w-4 mr-2"/>
+                                    Kick
+                                   </DropdownMenuItem>
                                </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     )}
+                    {loadingId===member.id && (<Loader2 className="h-4 w-4 animate-spin text-zinc-500"/>)}
                 </div>
             ))}
         </ScrollArea>
