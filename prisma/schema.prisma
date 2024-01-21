@@ -47,6 +47,10 @@ enum MemberRole{
 model Member{
   id String @id @default(auto()) @map("_id") @db.ObjectId
   role  MemberRole  @default(GUEST)
+  messages Message[]
+  conversationInitiated Conversation[] @relation("MemberOne")
+  conversationRecieved Conversation[] @relation("MemberTwo")
+  directMessages DirectMessage[]
   profileId String  @db.ObjectId
   profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   serverId  String @db.ObjectId
@@ -65,7 +69,7 @@ model Channel{
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   name    String
   type    ChannelType @default(TEXT)
-
+  message Message[]
   profileId String  @db.ObjectId
   profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   serverId  String @db.ObjectId
@@ -74,3 +78,38 @@ model Channel{
   updatedAt   DateTime  @updatedAt
 }
 
+model Message{
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  content String 
+  fileUrl String? 
+  memberId String @db.ObjectId
+  member   Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  channelId String @db.ObjectId
+  channel   Channel  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  deleted Boolean @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Conversation{
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  memberOneId String @db.ObjectId
+  memberOne   Member  @relation("MemberOne",fields: [memberOneId], references: [id], onDelete: Cascade)
+  memberTwoId String @db.ObjectId
+  memberTwo   Member  @relation("MemberTwo",fields: [memberTwoId], references: [id], onDelete: Cascade)
+  directMessages DirectMessage[]
+  @@unique([memberOneId,memberTwoId])
+}
+
+model DirectMessage{
+   id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  content String 
+  fileUrl String? 
+  memberId String @db.ObjectId
+  member   Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  conversationId String @db.ObjectId
+  conversation Conversation @relation(fields:[conversationId],references: [id], onDelete:Cascade)
+  deleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
