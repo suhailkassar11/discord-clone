@@ -85,7 +85,7 @@ model Message{
   memberId String @db.ObjectId
   member   Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
   channelId String @db.ObjectId
-  channel   Channel  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
   deleted Boolean @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
