@@ -5,10 +5,9 @@ import { useChatQuery } from "@/hooks/use-chat-query";
 import { Loader2, ServerCrash } from "lucide-react";
 import { Fragment } from "react";
 import ChatItems from "./chat-items";
-import {format} from "date-fns";
+import { format } from "date-fns";
 
-
-const DATE_FORMAT= "d MM yyyy, HH:mm";
+const DATE_FORMAT = "d MM yyyy, HH:mm";
 
 type MessageWithMemberWithProfile = Message & {
   member: Member & {
@@ -72,7 +71,19 @@ const ChatMessages = ({
         {data?.pages?.map((group, i) => (
           <Fragment key={i}>
             {group.items.map((message: MessageWithMemberWithProfile) => (
-              <ChatItems key={message.id} id={message.id} content={message.content} currrentMember={member} fileUrl={message.fileUrl} deleted={message.deleted} timestamp={format (new Date(message.createdAt),DATE_FORMAT)} isUpdated={message.updatedAt !== message.createdAt} socketUrl={socketUrl} socketQuery={socketQuery} member={message.member} />
+              <ChatItems
+                key={message.id}
+                id={message.id}
+                content={message.content}
+                currrentMember={member}
+                fileUrl={message.fileUrl}
+                deleted={message.deleted}
+                timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
+                isUpdated={message.updatedAt !== message.createdAt}
+                socketUrl={socketUrl}
+                socketQuery={socketQuery}
+                member={message.member}
+              />
             ))}
           </Fragment>
         ))}

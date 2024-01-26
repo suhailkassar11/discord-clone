@@ -2,7 +2,6 @@ import { currentProfilePages } from "@/lib/current-profile-pages";
 import { db } from "@/lib/db";
 import { NextApiResponseServerIo } from "@/type";
 import { NextApiRequest} from "next";
-import { boolean } from "zod";
 
 const handler=async(req:NextApiRequest,res:NextApiResponseServerIo)=>{
     if(req.method!=="POST"){
